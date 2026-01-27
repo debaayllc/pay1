@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>pay1 — pay $1 to exist</title>
+
+  <style>
+    body{
+      margin:0;
+      background:#0b0c10;
+      color:#e7e9ee;
+      font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto;
+      padding:20px;
+    }
+    header{
+      position:sticky;
+      top:0;
+      background:#0b0c10;
+      padding-bottom:14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      z-index:10;
+    }
+    h1{margin:0;font-size:22px;font-weight:900}
+    .tag{color:#a7adbb;margin-top:4px}
+    button{
+      margin-top:12px;
+      padding:10px 16px;
+      border-radius:999px;
+      border:0;
+      background:#fff;
+      color:#000;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .search{
+      margin-top:14px;
+      padding:10px;
+      width:100%;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#000;
+      color:#fff;
+    }
+    ol{
+      list-style:none;
+      padding:0;
+      margin-top:20px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    li{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:12px;
+    }
+    .name{font-weight:800}
+    .meta{color:#a7adbb;font-size:12px;margin-top:4px}
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>pay1</h1>
+  <div class="tag">pay $1 to exist.</div>
+  <button id="payBtn">Pay $1</button>
+  <input id="search" class="search" placeholder="Search your name" />
+</header>
+
+<ol id="list"></ol>
+
+<script>
+  // 🔒 Esto es PÚBLICO y está bien
+  const SUPABASE_URL = "REEMPLAZAR_AQUI";
+  const SUPABASE_ANON_KEY = "REEMPLAZAR_AQUI";
+
+  async function fetchEntries(){
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/entries?select=name,created_at&order=created_at.desc&limit=200`,
+      {
+        headers:{
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      }
+    );
+    return res.ok ? res.json() : [];
+  }
+
+  function formatDate(ts){
+    return new Date(ts).toLocaleString("en-US",{
+      year:"numeric",month:"short",day:"2-digit",
+      hour:"2-digit",minute:"2-digit"
+    });
+  }
+
+  let allEntries = [];
+
+  function render(filter=""){
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    allEntries
+      .filter(e => e.name.toLowerCase().includes(filter))
+      .forEach(e=>{
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <div class="name">${e.name}</div>
+          <div class="meta">${formatDate(e.created_at)} • paid $1</div>
+        `;
+        list.appendChild(li);
+      });
+  }
+
+  document.getElementById("search").addEventListener("input", e=>{
+    render(e.target.value.toLowerCase());
+  });
+
+  document.getElementById("payBtn").addEventListener("click", async ()=>{
+    const name = prompt("Name to display (max 32 chars)");
+    if(!name) return;
+
+    const res = await fetch("/api/create-checkout-session",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ name })
+    });
+
+    const data = await res.json();
+    if(data.url) window.location.href = data.url;
+    else alert("Payment error");
+  });
+
+  async function init(){
+    allEntries = await fetchEntries();
+    render();
+  }
+
+  init();
+  setInterval(init, 10000);
+</script>
+
+</body>
+</html>
