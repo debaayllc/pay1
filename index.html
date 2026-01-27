@@ -57,17 +57,36 @@
     }
     .name{font-weight:800}
     .meta{color:#a7adbb;font-size:12px;margin-top:4px}
+    
+    .header-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+}
+
+    #payBtn{
+      flex-shrink:0;
+      margin-top:4px;
+}
+
   </style>
 </head>
 
 <body>
 
-<header>
-  <h1>pay1</h1>
-  <div class="tag">pay $1 to exist.</div>
-  <button id="payBtn">Pay $1</button>
+<header class="header">
+  <div class="header-top">
+    <div>
+      <h1>pay1</h1>
+      <div class="tag">pay $1 to exist.</div>
+    </div>
+    <button id="payBtn">Pay $1</button>
+  </div>
+
   <input id="search" class="search" placeholder="Search your name" />
 </header>
+
 
 <ol id="list"></ol>
 
