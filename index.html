@@ -146,7 +146,7 @@
   });
 
   document.getElementById("payBtn").addEventListener("click", async ()=>{
-    const name = prompt("Name to display (max 32 chars)");
+    const name = prompt("Enter the name you want to leave here forever (max 32 characters)");
     if(!name) return;
 
     const res = await fetch("/api/create-checkout-session",{
